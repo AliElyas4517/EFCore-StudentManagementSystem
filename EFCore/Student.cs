@@ -11,7 +11,7 @@ namespace EFCore
         public int StudentId { get; set; }
         public string Name { get; set; }
 
-        // Navigation property
-        public List<Course> Courses { get; set; } = new List<Course>();
+        public List<Course> Courses { get; set; } = new();
+
     }
 }

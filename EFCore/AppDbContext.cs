@@ -12,9 +12,18 @@ namespace EFCore
         public DbSet<Student> Students { get; set; }
         public DbSet<Course> Courses { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            optionsBuilder.UseSqlite("Data Source=students.db");
+            options.UseSqlite("Data Source=students.db");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Student>()
+                .HasMany(s => s.Courses)
+                .WithOne(c => c.Student)
+                .HasForeignKey(c => c.StudentId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
