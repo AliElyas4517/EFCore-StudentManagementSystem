@@ -47,12 +47,16 @@ class Program
     {
         while (true)
         {
-            Console.WriteLine("\n=== EF Core CRUD Menu ===");
+            Console.WriteLine("\n=== EF Core CRUD + LINQ Menu ===");
             Console.WriteLine("1. Show All Students");
             Console.WriteLine("2. Add New Student");
             Console.WriteLine("3. Update Student Name");
             Console.WriteLine("4. Delete Student");
-            Console.WriteLine("5. Exit");
+            Console.WriteLine("5. LINQ: Count Students and Courses");
+            Console.WriteLine("6. LINQ: Filter Students by Name");
+            Console.WriteLine("7. LINQ: Sort Courses Alphabetically");
+            Console.WriteLine("8. LINQ: Check if Any Student Has No Courses");
+            Console.WriteLine("9. Exit");
             Console.Write("Choose an option: ");
             var choice = Console.ReadLine();
 
@@ -71,13 +75,73 @@ class Program
                     DeleteStudent(context);
                     break;
                 case "5":
+                    LinqCountStudentsCourses(context);
+                    break;
+                case "6":
+                    LinqFilterStudentsByName(context);
+                    break;
+                case "7":
+                    LinqSortCourses(context);
+                    break;
+                case "8":
+                    LinqAnyStudentNoCourses(context);
+                    break;
+                case "9":
                     return;
                 default:
-                    Console.WriteLine(" Invalid choice.");
+                    Console.WriteLine("❌ Invalid choice.");
                     break;
             }
         }
     }
+
+    // LINQ functions:
+
+    static void LinqCountStudentsCourses(AppDbContext context)
+    {
+        int studentCount = context.Students.Count();
+        int courseCount = context.Courses.Count();
+        Console.WriteLine($"\n Total Students: {studentCount}");
+        Console.WriteLine($" Total Courses: {courseCount}");
+    }
+
+    static void LinqFilterStudentsByName(AppDbContext context)
+    {
+        Console.Write("\nEnter partial name to filter students: ");
+        string input = Console.ReadLine();
+
+        var filtered = context.Students
+            .Where(s => s.Name.Contains(input))
+            .ToList();
+
+        Console.WriteLine($"\n Students with '{input}' in their name:");
+        if (filtered.Count == 0)
+            Console.WriteLine("No matching students found.");
+        else
+            foreach (var s in filtered)
+                Console.WriteLine($" {s.Name}");
+    }
+
+    static void LinqSortCourses(AppDbContext context)
+    {
+        var sortedCourses = context.Courses
+            .OrderBy(c => c.Title)
+            .ToList();
+
+        Console.WriteLine("\n Courses sorted alphabetically:");
+        foreach (var c in sortedCourses)
+            Console.WriteLine($" {c.Title}");
+    }
+
+    static void LinqAnyStudentNoCourses(AppDbContext context)
+    {
+        bool anyNoCourses = context.Students
+            .Include(s => s.Courses)
+            .Any(s => s.Courses.Count == 0);
+
+        Console.WriteLine($"\n Are there any students with no courses? {(anyNoCourses ? "Yes" : "No")}");
+    }
+
 
     static void ShowAllStudents(AppDbContext context)
     {
