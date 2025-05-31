@@ -57,6 +57,12 @@ class Program
             Console.WriteLine("7. LINQ: Sort Courses Alphabetically");
             Console.WriteLine("8. LINQ: Check if Any Student Has No Courses");
             Console.WriteLine("9. Exit");
+            Console.WriteLine("10. LINQ Query Syntax: Filter Students by Name");
+            Console.WriteLine("11. LINQ Query Syntax: Sort Courses Alphabetically");
+            Console.WriteLine("12. LINQ Query Syntax: Check if Any Student Has No Courses");
+            Console.WriteLine("13. LINQ Method Syntax: Filter Students by Name");
+            Console.WriteLine("14. LINQ Method Syntax: Sort Courses Alphabetically");
+            Console.WriteLine("15. LINQ Method Syntax: Check if Any Student Has No Courses");
             Console.Write("Choose an option: ");
             var choice = Console.ReadLine();
 
@@ -88,8 +94,26 @@ class Program
                     break;
                 case "9":
                     return;
+                case "10":
+                    LinqQuerySyntax_FilterStudentsByName(context);
+                    break;
+                case "11":
+                    LinqQuerySyntax_SortCourses(context);
+                    break;
+                case "12":
+                    LinqQuerySyntax_AnyStudentNoCourses(context);
+                    break;
+                case "13":
+                    LinqFilterStudentsByName_Method(context);
+                    break;
+                case "14":
+                    LinqSortCourses_Method(context);
+                    break;
+                case "15":
+                    LinqAnyStudentNoCourses_Method(context);
+                    break;
                 default:
-                    Console.WriteLine("❌ Invalid choice.");
+                    Console.WriteLine(" Invalid choice.");
                     break;
             }
         }
@@ -218,5 +242,84 @@ class Program
         context.Students.Remove(student);
         context.SaveChanges();
         Console.WriteLine("Student deleted.");
+    }
+
+    static void LinqQuerySyntax_FilterStudentsByName(AppDbContext context)
+    {
+        Console.Write("\n[Query Syntax] Enter partial name to filter students: ");
+        string input = Console.ReadLine();
+
+        var filtered = (from s in context.Students
+                        where s.Name.Contains(input)
+                        select s).ToList();
+
+        Console.WriteLine($"\n Students with '{input}' in their name:");
+        if (filtered.Count == 0)
+            Console.WriteLine("No matching students found.");
+        else
+            foreach (var s in filtered)
+                Console.WriteLine($" {s.Name}");
+    }
+
+    static void LinqQuerySyntax_SortCourses(AppDbContext context)
+    {
+        var sortedCourses = (from c in context.Courses
+                             orderby c.Title
+                             select c).ToList();
+
+        Console.WriteLine("\n [Query Syntax] Courses sorted alphabetically:");
+        foreach (var c in sortedCourses)
+            Console.WriteLine($" {c.Title}");
+    }
+
+    static void LinqQuerySyntax_AnyStudentNoCourses(AppDbContext context)
+    {
+        var studentsWithCourses = from s in context.Students.Include(s => s.Courses)
+                                  where s.Courses.Count == 0
+                                  select s;
+
+        bool anyNoCourses = studentsWithCourses.Any();
+
+        Console.WriteLine($"\n [Query Syntax] Are there any students with no courses? {(anyNoCourses ? "Yes" : "No")}");
+    }
+
+
+    // New Method Syntax LINQ implementations:
+
+    static void LinqFilterStudentsByName_Method(AppDbContext context)
+    {
+        Console.Write("\n[Method Syntax] Enter partial name to filter students: ");
+        string input = Console.ReadLine();
+
+        var filtered = context.Students
+                              .Where(s => s.Name.Contains(input))
+                              .ToList();
+
+        Console.WriteLine($"\nStudents with '{input}' in their name:");
+        if (filtered.Count == 0)
+            Console.WriteLine("No matching students found.");
+        else
+            foreach (var s in filtered)
+                Console.WriteLine($" {s.Name}");
+    }
+
+    static void LinqSortCourses_Method(AppDbContext context)
+    {
+        var sortedCourses = context.Courses
+                                   .OrderBy(c => c.Title)
+                                   .ToList();
+
+        Console.WriteLine("\n[Method Syntax] Courses sorted alphabetically:");
+        foreach (var c in sortedCourses)
+            Console.WriteLine($" {c.Title}");
+    }
+
+    static void LinqAnyStudentNoCourses_Method(AppDbContext context)
+    {
+        bool anyNoCourses = context.Students
+                                   .Include(s => s.Courses)
+                                   .Any(s => s.Courses.Count == 0);
+
+        Console.WriteLine($"\n[Method Syntax] Are there any students with no courses? {(anyNoCourses ? "Yes" : "No")}");
     }
 }
